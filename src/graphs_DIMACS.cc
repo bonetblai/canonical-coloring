@@ -27,9 +27,8 @@ int main(int argc, const char **argv) {
         if( line != "" and line[0] == '!' ) {
             //cout << line << endl;
         } else if( line != "" and line[0] != '!' ) {
-            ifstream ifs(line);
             auto clock_start = chrono::steady_clock::now();
-            Digraph *g = Digraph::read_DIMACS(ifs);
+            Digraph *g = Digraph::read_DIMACS(line);
             vector<int> alpha(g->order(), 1);
             vector<set<int> > partition = canonical_coloring.calculate(*g, alpha);
             vector<int> histogram = canonical_coloring.histogram();

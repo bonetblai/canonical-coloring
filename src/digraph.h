@@ -2,6 +2,7 @@
 #define DIGRAPH_H
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <vector>
 #include <cassert>
@@ -39,6 +40,11 @@ class Digraph {
     int num_edges() const { return m_; }
     const std::vector<int>& in(int u) const { return in_.at(u); }
     const std::vector<int>& out(int u) const { return out_.at(u); }
+
+    static Digraph* read_DIMACS(const std::string filename) {
+        std::ifstream ifs(filename);
+        return Digraph::read_DIMACS(ifs);
+    }
 
     static Digraph* read_DIMACS(std::istream &is) {
         int n, m, u, v;
