@@ -78,10 +78,10 @@ class CanonicalColoring {
     const std::vector<std::set<int> >& partition() const { return C_; }
     int num_colors() const { return k_; }
 
-    std::vector<int> histogram() const {
+    static std::vector<int> histogram(const std::vector<std::set<int> > &partition) {
         std::vector<int> hist;
-        for( int i = 0; i < k_; ++i )
-            hist.push_back(C_[i].size());
+        for( size_t i = 0; i < partition.size(); ++i )
+            hist.push_back(partition[i].size());
         return hist;
     }
 

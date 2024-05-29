@@ -31,7 +31,7 @@ int main(int argc, const char **argv) {
             Digraph *g = Digraph::read_DIMACS(line);
             vector<int> alpha(g->order(), 1);
             vector<set<int> > partition = canonical_coloring.calculate(*g, alpha);
-            vector<int> histogram = canonical_coloring.histogram();
+            vector<int> histogram = CanonicalColoring::histogram(canonical_coloring.partition());
             int num_colors = canonical_coloring.num_colors();
             auto clock_stop = chrono::steady_clock::now();
             double microseconds = chrono::duration_cast<chrono::microseconds>(clock_stop - clock_start).count();

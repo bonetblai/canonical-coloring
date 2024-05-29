@@ -32,7 +32,7 @@ int main(int argc, const char **argv) {
     vector<int> alpha = { 1, 1, 1, 1,  1, 1, 1, 2 };
     vector<set<int> > partition = canonical_coloring.calculate(g1, alpha);
     cout << "Canonical equitable partition: " << partition << endl;
-    cout << "Histogram: " << canonical_coloring.histogram() << endl;
+    cout << "Histogram: " << CanonicalColoring::histogram(canonical_coloring.partition()) << endl;
 
     Digraph g2(10);
     g2.uadd(0, 2);
@@ -53,7 +53,7 @@ int main(int argc, const char **argv) {
     vector<int> beta = { 2, 2, 1, 1, 1,   1, 1, 1, 1, 1 };
     partition = canonical_coloring.calculate(g2, beta);
     cout << "Canonical equitable partition: " << partition << endl;
-    cout << "Histogram: " << canonical_coloring.histogram() << endl;
+    cout << "Histogram: " << CanonicalColoring::histogram(canonical_coloring.partition()) << endl;
 
     return 0;
 }
