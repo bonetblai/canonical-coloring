@@ -1,6 +1,6 @@
-#include<iostream>
-#include<set>
-#include<vector>
+#include <iostream>
+#include <set>
+#include <vector>
 
 template<typename T> std::ostream& operator<<(std::ostream &os, const std::set<T> &v);
 

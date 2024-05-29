@@ -1,10 +1,11 @@
 #ifndef CANONICAL_H
 #define CANONICAL_H
 
-#include<iostream>
-#include<set>
-#include<vector>
-#include<cassert>
+#include <iostream>
+#include <set>
+#include <vector>
+#include <cassert>
+
 #include "digraph.h"
 #include "util.h"
 
@@ -75,19 +76,20 @@ class CanonicalColoring {
 
     const std::vector<int>& coloring() const { return colour_; }
     const std::vector<std::set<int> >& partition() const { return C_; }
+    int num_colors() const { return k_; }
 
     std::vector<int> histogram() const {
         std::vector<int> hist;
-        for( int i = 1; i <= k_; ++i )
+        for( int i = 0; i < k_; ++i )
             hist.push_back(C_[i].size());
         return hist;
     }
 
-    std::vector<std::set<int> > calculate(const Digraph &graph, const std::vector<int> &alpha) {
+    const std::vector<std::set<int> >& calculate(const Digraph &graph, const std::vector<int> &alpha) {
         int n = graph.order();
         colour_ = std::vector<int>(n+1, 0);
         C_ = std::vector<std::set<int> >(n+1);
-        A_ = std::vector<std::vector<int> >(n);
+        A_ = std::vector<std::vector<int> >(n+1);
         mincdeg_ = std::vector<int>(n+1, -1);
         maxcdeg_ = std::vector<int>(n+1, 0);
         cdeg_ = std::vector<int>(n+1, 0);
@@ -112,8 +114,8 @@ class CanonicalColoring {
         std::vector<int> colors_split; // Colors in colors_adj that generate non-trivial splits
 
         s_refine_.initialize(n);
-        in_s_refine_ = std::vector<bool>(n, false);
-        std::vector<bool> in_colors_adj(n, false);
+        in_s_refine_ = std::vector<bool>(n+1, false);
+        std::vector<bool> in_colors_adj(n+1, false);
         colors_adj.reserve(n+1);
         colors_split.reserve(n+1);
 
@@ -215,7 +217,8 @@ class CanonicalColoring {
             }
         }
 
-        // Return canonical equitable partition
+        // Simplify and return canonical equitable partition
+        C_.assign(C_.begin() + 1, C_.begin() + 1 + k_);
         return C_;
     }
 

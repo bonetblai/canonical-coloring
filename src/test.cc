@@ -1,4 +1,9 @@
-#include<iostream>
+#include <iostream>
+#include <fstream>
+#include <set>
+#include <vector>
+#include <cassert>
+
 #include "canonical.h"
 #include "digraph.h"
 
@@ -50,6 +55,6 @@ int main(int argc, const char **argv) {
     cout << "Canonical equitable partition: " << partition << endl;
     cout << "Histogram: " << canonical_coloring.histogram() << endl;
 
-    return -1;
+    return 0;
 }
 
