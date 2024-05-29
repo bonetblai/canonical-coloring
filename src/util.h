@@ -2,6 +2,7 @@
 #include <set>
 #include <vector>
 
+// Forward reference
 template<typename T> std::ostream& operator<<(std::ostream &os, const std::set<T> &v);
 
 template<typename T>

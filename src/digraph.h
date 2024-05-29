@@ -8,8 +8,8 @@
 
 class Digraph {
   protected:
-    int n_; // number of vertices
-    int m_; // number of edges
+    int n_; // Number of vertices
+    int m_; // Number of edges
     std::vector<std::vector<int> > in_, out_;
     std::set<std::pair<int, int> > edges_;
 
@@ -19,10 +19,12 @@ class Digraph {
         out_.resize(n_);
     }
     void uadd(int u, int v) {
+        assert(u != v);
         add(u, v);
         add(v, u);
     }
     void add(int u, int v) {
+        // Not clear if algorithm can handle directed loops u -> u
         assert(0 <= u and u < n_);
         assert(0 <= v and v < n_);
         auto edge = std::make_pair(u, v);

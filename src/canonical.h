@@ -172,7 +172,7 @@ class CanonicalColoring {
 
             // Compute mincdeg for color r
             for( auto const& c : colors_adj ) {
-                if( C_.at(c).size() != A_.at(c).size() ) { // Maintain list lengths
+                if( C_.at(c).size() != A_.at(c).size() ) {
                     mincdeg_.at(c) = 0;
                 } else {
                     mincdeg_.at(c) = maxcdeg_.at(c);
