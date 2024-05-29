@@ -8,7 +8,7 @@ Source code includes a simpe class for digraphs to represent the graph passed to
 two exacutables: ```test```, and ```graphs_DIMACS```. The first computes the canonical partition for
 two simple graphs with initial colorings. The second is a general tool computes the canonical partition
 for the graphs listed in a file given as arguments. Each file in the list must contain a graph in DIMACS
-format.
+format. A repository of such files can be found [here.](https://pallini.di.uniroma1.it/Graphs.html)
 
 References:
 
