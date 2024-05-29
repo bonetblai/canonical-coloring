@@ -24,9 +24,11 @@ int main(int argc, const char **argv) {
     int num_graphs = 0;
     ifstream ifs_graphs(argv[1]);
     for( string line; getline(ifs_graphs, line); ) {
-        if( line != "" and line[0] == '!' ) {
-            //cout << line << endl;
-        } else if( line != "" and line[0] != '!' ) {
+        if( line == "" ) {
+            // Skip blank line
+        } else if( line[0] == '!' ) {
+            // Comment line
+        } else {
             auto clock_start = chrono::steady_clock::now();
             Digraph *g = Digraph::read_DIMACS(line);
             vector<int> alpha(g->order(), 1);

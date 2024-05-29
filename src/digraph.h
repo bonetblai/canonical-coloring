@@ -50,18 +50,27 @@ class Digraph {
         int n, m, u, v;
         std::string buff;
         Digraph *g = nullptr;
-        for( std::string line; getline(is, line); ) {
+        size_t line_number = 1;
+        for( std::string line; getline(is, line); ++line_number ) {
             if( line == "" or line[0] == 'c' ) {
+                // Skip blank or comment line
                 continue;
-            } else if( line[0] == 'p' ) {
+            } else if( line == "stop" or line == "end" ) {
+                // Terminate reading graph
+                break;
+            } else if( line[0] == 'p' and line[1] == ' ' ) {
+                // Create graph
                 std::stringstream ss(line);
                 ss >> buff >> buff >> n >> m;
+                assert(buff == "edge");
                 g = new Digraph(n);
-            } else if( line[0] == 'e' ) {
+            } else if( line[0] == 'e' and line[1] == ' ' ) {
                 std::stringstream ss(line);
                 ss >> buff >> u >> v;
                 assert(0 < u <= n and 0 < v <= n);
                 g->uadd(u-1, v-1);
+            } else {
+                throw std::runtime_error("Unrecognized '" + line + "' (line " + std::to_string(line_number) + ") while reading DIMACS graph");
             }
         }
         assert(g->order() == n and g->num_edges() == 2*m);
