@@ -1,13 +1,14 @@
-CCFLAGS=-O3 -DNDEBUG
+CC=clang++
+CCFLAGS=-O3 -DNDEBUG -pedantic -Wall
 
-all:	graphs_DIMACS test
+all:		graphs_DIMACS simple_test
 
 graphs_DIMACS:	graphs_DIMACS.cc canonical.h digraph.h util.h
-		clang++ -o graphs_DIMACS $(CCFLAGS) graphs_DIMACS.cc -std=c++11
+		$(CC) -o graphs_DIMACS $(CCFLAGS) graphs_DIMACS.cc -std=c++11
 
-test:	test.cc canonical.h digraph.h util.h
-	clang++ -o test $(CCFLAGS) test.cc -std=c++11
+simple_test:	simple_test.cc canonical.h digraph.h util.h
+		$(CC) -o simple_test $(CCFLAGS) simple_test.cc -std=c++11
 
 clean:
-	rm -f graphs_DIMACS test *~
+		rm -f graphs_DIMACS simple_test *~
 
