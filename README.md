@@ -11,7 +11,7 @@ Each file in the list must contain a graph in DIMACS format. A repository of suc
 found [here.](https://pallini.di.uniroma1.it/Graphs.html)
 
 The following results were obtained with ```graphs_DIMACS``` on the collection ```dac```
-for graphs associated with CNF formulas. In the results, ```n``` and ```m``` is
+for graphs associated with CNF formulas. In the results, ```n``` and ```m``` are
 the number of vertices and edges, respectively, and ```k``` is the number of
 colors in the canonical coloring:
 
