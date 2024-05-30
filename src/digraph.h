@@ -9,8 +9,8 @@
 
 class Digraph {
   protected:
-    int n_; // Number of vertices
-    int m_; // Number of edges
+    const int n_; // Number of vertices
+    int m_;       // Number of edges
     std::vector<std::vector<int> > in_, out_;
     std::set<std::pair<int, int> > edges_;
 
@@ -26,6 +26,7 @@ class Digraph {
     }
     void add(int u, int v) {
         // Not clear if algorithm can handle directed loops u -> u
+        assert(u != v);
         assert(0 <= u and u < n_);
         assert(0 <= v and v < n_);
         auto edge = std::make_pair(u, v);
@@ -41,7 +42,7 @@ class Digraph {
     const std::vector<int>& in(int u) const { return in_.at(u); }
     const std::vector<int>& out(int u) const { return out_.at(u); }
 
-    static Digraph* read_DIMACS(const std::string filename) {
+    static Digraph* read_DIMACS(const std::string &filename) {
         std::ifstream ifs(filename);
         return Digraph::read_DIMACS(ifs);
     }
