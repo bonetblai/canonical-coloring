@@ -6,7 +6,7 @@ as it uses a vector of sets to represent the current partition.
 
 Source code includes a simpe class for digraphs, and two exacutables: ```simple_test```, and ```graphs_DIMACS```. 
 The first computes the canonical partition for two simple graphs with initial colorings. The second is
-a general tool computes the canonical partition for the graphs listed in a file given as argument. 
+a general tool to compute canonical partitions for the graphs listed in a file given as argument. 
 Each file in the list must contain a graph in DIMACS format. A repository of such files can be 
 found [here.](https://pallini.di.uniroma1.it/Graphs.html)
 
