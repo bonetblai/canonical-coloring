@@ -70,6 +70,75 @@ class CanonicalColoring {
     Stack<int> s_refine_;
     std::vector<bool> in_s_refine_;
 
+    void split_up_color(int s) {
+        int maxcdeg = maxcdeg_.at(s);
+        std::vector<int> numcdeg(1 + maxcdeg, 0);
+        for( auto const& v : A_.at(s) ) {
+            assert(cdeg_.at(v) > 0);
+            numcdeg.at(cdeg_.at(v)) = numcdeg.at(cdeg_.at(v)) + 1;
+        }
+        numcdeg.at(0) = C_.at(s).size() - A_.at(s).size();
+
+        if( debug_ > 1 ) {
+            std::cout << "             A[" << s << "]: " << A_.at(s) << std::endl;
+            std::cout << "             C[" << s << "]: " << C_.at(s) << std::endl;
+            std::cout << "       maxcdeg[" << s << "]: " << maxcdeg_.at(s) << std::endl;
+            std::cout << "          numcdeg: " << numcdeg << std::endl;
+        }
+
+        int b = 0;
+        for( int i = 1; i <= maxcdeg; ++i ) {
+            if( numcdeg.at(i) > numcdeg.at(b) )
+                b = i;
+        }
+
+        if( debug_ > 1 ) std::cout << "                b: " << b << " (index for max entry in numcdeg)" << std::endl;
+
+        bool in_stack = in_s_refine_.at(s);
+
+        if( debug_ > 1 ) {
+            std::cout << "            stack: " << s_refine_ << std::endl;
+            std::cout << "    Is s in stack? " << in_stack << std::endl;
+        }
+
+        std::vector<int> f(1 + maxcdeg, -1);
+        for( int i = 0; i <= maxcdeg; ++i ) {
+            if( numcdeg.at(i) > 0 ) {
+                if( i == mincdeg_.at(s) ) {
+                    f.at(i) = s;
+                    if( !in_stack and i != b ) {
+                        s_refine_.push(f.at(i));
+                        in_s_refine_.at(f.at(i)) = true;
+                    }
+                } else {
+                    k_ = k_ + 1;
+                    f.at(i) = k_;
+                    if( in_stack or i != b ) {
+                        s_refine_.push(f.at(i));
+                        in_s_refine_.at(f.at(i)) = true;
+                    }
+                }
+            }
+        }
+        if( debug_ > 1 ) std::cout << "                f: " << f << std::endl;
+
+        for( auto const& v : A_.at(s) ) {
+            if( f.at(cdeg_.at(v)) != s ) {
+                assert(C_.at(s).find(v) != C_.at(s).end());
+                if( debug_ > 1 ) std::cout << "            Delete v=" << v << " from C[s]=C[" << s << "]" << std::endl;
+                C_.at(s).erase(v);
+                if( debug_ > 1 ) std::cout << "            Append v=" << v << " to C[f[cdeg[v]]]=C[" << f.at(cdeg_.at(v)) << "]" << std::endl;
+                C_.at(f.at(cdeg_.at(v))).insert(v);
+                colour_.at(v) = f.at(cdeg_.at(v));
+            }
+        }
+
+        if( debug_ > 1 ) {
+            std::cout << "                C: " << C_ << std::endl;
+            std::cout << "            stack: " << s_refine_ << std::endl;
+        }
+    }
+
   public:
     CanonicalColoring(int debug = 0) : debug_(debug) { }
     ~CanonicalColoring() { }
@@ -220,75 +289,6 @@ class CanonicalColoring {
         // Simplify and return canonical equitable partition
         C_.assign(C_.begin() + 1, C_.begin() + 1 + k_);
         return C_;
-    }
-
-    void split_up_color(int s) {
-        int maxcdeg = maxcdeg_.at(s);
-        std::vector<int> numcdeg(1 + maxcdeg, 0);
-        for( auto const& v : A_.at(s) ) {
-            assert(cdeg_.at(v) > 0);
-            numcdeg.at(cdeg_.at(v)) = numcdeg.at(cdeg_.at(v)) + 1;
-        }
-        numcdeg.at(0) = C_.at(s).size() - A_.at(s).size();
-
-        if( debug_ > 1 ) {
-            std::cout << "             A[" << s << "]: " << A_.at(s) << std::endl;
-            std::cout << "             C[" << s << "]: " << C_.at(s) << std::endl;
-            std::cout << "       maxcdeg[" << s << "]: " << maxcdeg_.at(s) << std::endl;
-            std::cout << "          numcdeg: " << numcdeg << std::endl;
-        }
-
-        int b = 0;
-        for( int i = 1; i <= maxcdeg; ++i ) {
-            if( numcdeg.at(i) > numcdeg.at(b) )
-                b = i;
-        }
-
-        if( debug_ > 1 ) std::cout << "                b: " << b << " (index for max entry in numcdeg)" << std::endl;
-
-        bool in_stack = in_s_refine_.at(s);
-
-        if( debug_ > 1 ) {
-            std::cout << "            stack: " << s_refine_ << std::endl;
-            std::cout << "    Is s in stack? " << in_stack << std::endl;
-        }
-
-        std::vector<int> f(1 + maxcdeg, -1);
-        for( int i = 0; i <= maxcdeg; ++i ) {
-            if( numcdeg.at(i) > 0 ) {
-                if( i == mincdeg_.at(s) ) {
-                    f.at(i) = s;
-                    if( !in_stack and i != b ) {
-                        s_refine_.push(f.at(i));
-                        in_s_refine_.at(f.at(i)) = true;
-                    }
-                } else {
-                    k_ = k_ + 1;
-                    f.at(i) = k_;
-                    if( in_stack or i != b ) {
-                        s_refine_.push(f.at(i));
-                        in_s_refine_.at(f.at(i)) = true;
-                    }
-                }
-            }
-        }
-        if( debug_ > 1 ) std::cout << "                f: " << f << std::endl;
-
-        for( auto const& v : A_.at(s) ) {
-            if( f.at(cdeg_.at(v)) != s ) {
-                assert(C_.at(s).find(v) != C_.at(s).end());
-                if( debug_ > 1 ) std::cout << "            Delete v=" << v << " from C[s]=C[" << s << "]" << std::endl;
-                C_.at(s).erase(v);
-                if( debug_ > 1 ) std::cout << "            Append v=" << v << " to C[f[cdeg[v]]]=C[" << f.at(cdeg_.at(v)) << "]" << std::endl;
-                C_.at(f.at(cdeg_.at(v))).insert(v);
-                colour_.at(v) = f.at(cdeg_.at(v));
-            }
-        }
-
-        if( debug_ > 1 ) {
-            std::cout << "                C: " << C_ << std::endl;
-            std::cout << "            stack: " << s_refine_ << std::endl;
-        }
     }
 };
 
