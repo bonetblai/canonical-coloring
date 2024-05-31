@@ -5,6 +5,7 @@
 
 #include "canonical.h"
 #include "digraph.h"
+#include "openssl_digests.h"
 
 using namespace std;
 
@@ -18,6 +19,7 @@ int main(int argc, const char **argv) {
         return -1;
     }
 
+    OpenSSL::Digests openssl_digests;
     CanonicalColoring canonical_coloring(0);
     auto clock_begin = chrono::steady_clock::now();
 
@@ -32,13 +34,16 @@ int main(int argc, const char **argv) {
             auto clock_start = chrono::steady_clock::now();
             Digraph *g = Digraph::read_DIMACS(line);
             vector<int> alpha(g->order(), 1);
-            vector<set<int> > partition = canonical_coloring.calculate(*g, alpha);
+            vector<set<int> > partition = canonical_coloring.calculate(*g, alpha, true);
             vector<int> histogram = CanonicalColoring::histogram(canonical_coloring.partition());
             int num_colors = canonical_coloring.num_colors();
             auto clock_stop = chrono::steady_clock::now();
             double microseconds = chrono::duration_cast<chrono::microseconds>(clock_stop - clock_start).count();
-            //cout << line << " (n=" << g->order() << ", m=" << g->num_edges() << ") " << histogram << " " << microseconds / 1e3 << " millisecond(s)" << endl;
-            cout << line << " (n=" << g->order() << ", m=" << g->num_edges() << ") k=" << num_colors << " color(s) " << microseconds / 1e3 << " millisecond(s)" << endl;
+
+            string factor_matrix = canonical_coloring.factor_matrix();
+            string sha256 = openssl_digests.sha256(factor_matrix);
+            cout << line << " (n=" << g->order() << ", m=" << g->num_edges() << ") k=" << num_colors << " " << sha256 << " color(s) " << microseconds / 1e3 << " millisecond(s)" << endl;
+
             delete g;
             ++num_graphs;
         }
