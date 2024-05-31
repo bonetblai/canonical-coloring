@@ -149,7 +149,7 @@ class CanonicalColoring {
             int u = *C_.at(i).begin();
             std::vector<int> frequency(1 + k_, 0);
             for( auto& v : graph.out(u-1) ) {
-                int j = colour_.at(v-1);
+                int j = colour_.at(v+1);
                 frequency.at(j) += 1;
             }
             for( size_t j = 1; j < frequency.size(); ++j ) {
@@ -214,7 +214,7 @@ class CanonicalColoring {
         return status;
     }
 
-    const std::vector<std::set<int> >& calculate(const Digraph &graph, const std::vector<int> &alpha) {
+    const std::vector<std::set<int> >& calculate(const Digraph &graph, const std::vector<int> &alpha, bool factor_matrix = false) {
         if( CanonicalColoring::check_coloring(alpha, true) != 0 )
             throw std::runtime_error("invalid initial coloring");
 
@@ -351,11 +351,11 @@ class CanonicalColoring {
 
         // Simplify, compute factor matrix,  and return canonical equitable partition
         C_.assign(C_.begin() + 1, C_.begin() + 1 + k_);
-        calculate_factor_matrix(graph);
+        if( factor_matrix ) calculate_factor_matrix(graph);
         return C_;
     }
 
-    std::string hash() const {
+    std::string factor_matrix() const {
         std::string code;
         for( auto& p : M_ ) {
            if( code != "" ) code += "-";
