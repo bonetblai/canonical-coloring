@@ -68,6 +68,7 @@ class CanonicalColoring {
     std::vector<int> maxcdeg_;         // Indexed by color. maxcdeg[c] = max { d^+_r(v) : v is of color c }
     std::vector<int> mincdeg_;         // Indexed by color. mincdeg[c] = min { d^+_r(v) : v is of color c }
 
+    bool valid_M_;                                        // Whether the factor matrix was computed
     std::vector<std::pair<std::pair<int, int>, int> > M_; // Factor matrix
 
     int k_;
@@ -159,6 +160,7 @@ class CanonicalColoring {
                     M_.push_back(std::make_pair(std::make_pair(i+1, j+1), frequency.at(j)));
             }
         }
+        valid_M_ = true;
     }
 
   public:
@@ -228,6 +230,7 @@ class CanonicalColoring {
         maxcdeg_ = std::vector<int>(n+1, 0);
         cdeg_ = std::vector<int>(n+1, 0);
         maxcdeg_.at(0) = -1;
+        valid_M_ = false;
 
         // Create initial partition
         k_ = 0;
@@ -358,6 +361,8 @@ class CanonicalColoring {
     }
 
     std::string factor_matrix() const {
+        if( !valid_M_ ) throw std::runtime_error("invalid factor matrix: call calculate() with third argument set to true");
+
         std::string code;
         for( auto& p : M_ ) {
            if( code != "" ) code += "-";
