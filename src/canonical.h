@@ -1,7 +1,9 @@
 #ifndef CANONICAL_H
 #define CANONICAL_H
 
+#include <algorithm>
 #include <iostream>
+#include <limits>
 #include <set>
 #include <vector>
 #include <cassert>
@@ -65,6 +67,8 @@ class CanonicalColoring {
     std::vector<int> cdeg_;            // Indexed by vertex. Color degree d^+_r(v) = |N^+(v) \cap C_r| (number of out-neighbors of vertex v of color r)
     std::vector<int> maxcdeg_;         // Indexed by color. maxcdeg[c] = max { d^+_r(v) : v is of color c }
     std::vector<int> mincdeg_;         // Indexed by color. mincdeg[c] = min { d^+_r(v) : v is of color c }
+
+    std::vector<std::pair<std::pair<int, int>, int> > M_; // Factor matrix
 
     int k_;
     Stack<int> s_refine_;
@@ -139,6 +143,22 @@ class CanonicalColoring {
         }
     }
 
+    void calculate_factor_matrix(const Digraph &graph) {
+        M_ = std::vector<std::pair<std::pair<int, int>, int> >();
+        for( int i = 0; i < k_; ++i ) {
+            int u = *C_.at(i).begin();
+            std::vector<int> frequency(1 + k_, 0);
+            for( auto& v : graph.out(u-1) ) {
+                int j = colour_.at(v-1);
+                frequency.at(j) += 1;
+            }
+            for( size_t j = 1; j < frequency.size(); ++j ) {
+                if( frequency.at(j) > 0 )
+                    M_.push_back(std::make_pair(std::make_pair(i, j), frequency.at(j)));
+            }
+        }
+    }
+
   public:
     CanonicalColoring(int debug = 0) : debug_(debug) { }
     ~CanonicalColoring() { }
@@ -150,11 +170,54 @@ class CanonicalColoring {
     static std::vector<int> histogram(const std::vector<std::set<int> > &partition) {
         std::vector<int> hist;
         for( size_t i = 0; i < partition.size(); ++i )
-            hist.push_back(partition[i].size());
+            hist.push_back(partition.at(i).size());
         return hist;
     }
 
+    static int check_coloring(const std::vector<int> &alpha, bool verbose=true) {
+        int status = 0;
+
+        // Check that min color in alpha is 1
+        int min_color = std::numeric_limits<int>::max();
+        for( auto const& c : alpha )
+            min_color = std::min(min_color, c);
+        if( min_color != 1 ) {
+            status |= 1;
+            if( verbose ) std::cout << "check_coloring: minimum color must be 1, got " << min_color  << std::endl;
+        }
+        if( min_color < 0 ) return status;
+
+        // Check that there are no "color gaps"
+        std::vector<int> frequency, gaps;
+        for( auto const& c : alpha ) {
+            frequency.resize(std::max(int(frequency.size()), 1 + c), 0);
+            assert(c < frequency.size());
+            frequency.at(c) += 1;
+        }
+
+        for( size_t i = frequency.size() - 1; i > 0; --i ) {
+            assert(frequency.at(i) > 0);
+            if( i > 1 and frequency.at(i-1) == 0 )
+                gaps.push_back(i-1);
+        }
+        if( !gaps.empty() ) status |= 2;
+
+        if( verbose and !gaps.empty()) {
+            std::cout << "check_coloring: color gap(s) at";
+            for( int i = gaps.size() - 1; i >= 0; --i ) {
+              std::cout << " " << gaps.at(i);
+              if( i > 0 ) std::cout << ",";
+            }
+            std::cout << std::endl;
+        }
+
+        return status;
+    }
+
     const std::vector<std::set<int> >& calculate(const Digraph &graph, const std::vector<int> &alpha) {
+        if( CanonicalColoring::check_coloring(alpha, true) != 0 )
+            throw std::runtime_error("invalid initial coloring");
+
         int n = graph.order();
         colour_ = std::vector<int>(n+1, 0);
         C_ = std::vector<std::set<int> >(n+1);
@@ -162,7 +225,7 @@ class CanonicalColoring {
         mincdeg_ = std::vector<int>(n+1, -1);
         maxcdeg_ = std::vector<int>(n+1, 0);
         cdeg_ = std::vector<int>(n+1, 0);
-        maxcdeg_[0] = -1;
+        maxcdeg_.at(0) = -1;
 
         // Create initial partition
         k_ = 0;
@@ -286,9 +349,19 @@ class CanonicalColoring {
             }
         }
 
-        // Simplify and return canonical equitable partition
+        // Simplify, compute factor matrix,  and return canonical equitable partition
         C_.assign(C_.begin() + 1, C_.begin() + 1 + k_);
+        calculate_factor_matrix(graph);
         return C_;
+    }
+
+    std::string hash() const {
+        std::string code;
+        for( auto& p : M_ ) {
+           if( code != "" ) code += "-";
+           code += std::to_string(p.first.first) + ":" + std::to_string(p.first.second) + ":" + std::to_string(p.second);
+        }
+        return code;
     }
 };
 
