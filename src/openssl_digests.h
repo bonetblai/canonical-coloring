@@ -33,7 +33,7 @@ class Digests {
         OpenSSL_add_all_algorithms();
     }
 
-    // generic MD digest runner 
+    // generic MD digest runner
     std::string generateDigest(const void *src, size_t slen, const EVP_MD* digest) {
         unsigned int mdlen = EVP_MD_size(digest);
         std::vector<uint8_t> md(mdlen);

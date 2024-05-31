@@ -147,14 +147,16 @@ class CanonicalColoring {
         M_ = std::vector<std::pair<std::pair<int, int>, int> >();
         for( int i = 0; i < k_; ++i ) {
             int u = *C_.at(i).begin();
-            std::vector<int> frequency(1 + k_, 0);
+            std::vector<int> frequency(k_, 0);
             for( auto& v : graph.out(u-1) ) {
                 int j = colour_.at(v+1);
-                frequency.at(j) += 1;
+                frequency.at(j-1) += 1;
             }
-            for( size_t j = 1; j < frequency.size(); ++j ) {
+            assert(frequency.at(i) == 0);
+            frequency.at(i) = C_.at(i).size();
+            for( size_t j = 0; j < frequency.size(); ++j ) {
                 if( frequency.at(j) > 0 )
-                    M_.push_back(std::make_pair(std::make_pair(i, j), frequency.at(j)));
+                    M_.push_back(std::make_pair(std::make_pair(i+1, j+1), frequency.at(j)));
             }
         }
     }
@@ -231,7 +233,7 @@ class CanonicalColoring {
         k_ = 0;
         colour_.at(0) = -1;
         for( int v = 0; v < n; ++v ) {
-            C_.at(alpha.at(v)).insert(v+1); 
+            C_.at(alpha.at(v)).insert(v+1);
             colour_.at(v+1) = alpha.at(v);
             k_ = std::max(k_, alpha.at(v));
         }
@@ -359,7 +361,8 @@ class CanonicalColoring {
         std::string code;
         for( auto& p : M_ ) {
            if( code != "" ) code += "-";
-           code += std::to_string(p.first.first) + ":" + std::to_string(p.first.second) + ":" + std::to_string(p.second);
+           //code += std::to_string(p.first.first) + ":" + std::to_string(p.first.second) + ":" + std::to_string(p.second);
+           code += std::to_string(p.second) + "@(" + std::to_string(p.first.first) + "," + std::to_string(p.first.second) + ")";
         }
         return code;
     }
