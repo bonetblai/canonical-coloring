@@ -61,15 +61,15 @@ class CanonicalColoring {
   protected:
     const int debug_;
 
-    std::vector<std::set<int> >    C_; // Indexed by color. Partition. C[c] is set of vertices with color c
-    std::vector<std::vector<int> > A_; // Indexed by color. A[c] is vertices of color c adjacent to vertices of color r
-    std::vector<int> colour_;          // Indexed by vertex. colour[v] is color of vertex v
-    std::vector<int> cdeg_;            // Indexed by vertex. Color degree d^+_r(v) = |N^+(v) \cap C_r| (number of out-neighbors of vertex v of color r)
-    std::vector<int> maxcdeg_;         // Indexed by color. maxcdeg[c] = max { d^+_r(v) : v is of color c }
-    std::vector<int> mincdeg_;         // Indexed by color. mincdeg[c] = min { d^+_r(v) : v is of color c }
+    std::vector<std::set<int> >    C_;  // Indexed by color. Partition. C[c] is set of vertices with color c
+    std::vector<std::vector<int> > A_;  // Indexed by color. A[c] is vertices of color c adjacent to vertices of color r
+    std::vector<int> colour_;           // Indexed by vertex. colour[v] is color of vertex v
+    std::vector<int> cdeg_;             // Indexed by vertex. Color degree d^+_r(v) = |N^+(v) \cap C_r| (number of out-neighbors of vertex v of color r)
+    std::vector<int> maxcdeg_;          // Indexed by color. maxcdeg[c] = max { d^+_r(v) : v is of color c }
+    std::vector<int> mincdeg_;          // Indexed by color. mincdeg[c] = min { d^+_r(v) : v is of color c }
 
-    bool valid_M_;                                        // Whether the factor matrix was computed
-    std::vector<std::pair<std::pair<int, int>, int> > M_; // Factor matrix
+    bool valid_QM_;                     // Whether the quotient matrix was computed
+    std::vector<std::vector<int> > QM_; // Quotient matrix
 
     int k_;
     Stack<int> s_refine_;
@@ -144,8 +144,8 @@ class CanonicalColoring {
         }
     }
 
-    void calculate_factor_matrix(const Digraph &graph) {
-        M_ = std::vector<std::pair<std::pair<int, int>, int> >();
+    void calculate_quotient_matrix(const Digraph &graph) {
+        QM_ = std::vector<std::vector<int> >();
         for( int i = 0; i < k_; ++i ) {
             int u = *C_.at(i).begin();
             std::vector<int> frequency(k_, 0);
@@ -153,30 +153,23 @@ class CanonicalColoring {
                 int j = colour_.at(v+1);
                 frequency.at(j-1) += 1;
             }
-            assert(frequency.at(i) == 0);
-            frequency.at(i) = C_.at(i).size();
-            for( size_t j = 0; j < frequency.size(); ++j ) {
-                if( frequency.at(j) > 0 )
-                    M_.push_back(std::make_pair(std::make_pair(i+1, j+1), frequency.at(j)));
+            for( int j = 0; j < frequency.size(); ++j ) {
+                if( frequency.at(j) > 0 ) {
+                    std::vector<int> entry({i+1, j+1, frequency.at(j)});
+                    QM_.emplace_back(std::move(entry));
+                }
             }
         }
-        valid_M_ = true;
+        valid_QM_ = true;
     }
 
   public:
-    CanonicalColoring(int debug = 0) : debug_(debug) { }
+    CanonicalColoring(int debug = 0) : debug_(debug), valid_QM_(false) { }
     ~CanonicalColoring() { }
 
     const std::vector<int>& coloring() const { return colour_; }
     const std::vector<std::set<int> >& partition() const { return C_; }
     int num_colors() const { return k_; }
-
-    static std::vector<int> histogram(const std::vector<std::set<int> > &partition) {
-        std::vector<int> hist;
-        for( size_t i = 0; i < partition.size(); ++i )
-            hist.push_back(partition.at(i).size());
-        return hist;
-    }
 
     static int check_coloring(const std::vector<int> &alpha, bool verbose=true) {
         int status = 0;
@@ -218,7 +211,7 @@ class CanonicalColoring {
         return status;
     }
 
-    const std::vector<std::set<int> >& calculate(const Digraph &graph, const std::vector<int> &alpha, bool factor_matrix = false) {
+    const std::vector<std::set<int> >& calculate(const Digraph &graph, const std::vector<int> &alpha, bool calculate_qm = false) {
         if( CanonicalColoring::check_coloring(alpha, true) != 0 )
             throw std::runtime_error("invalid initial coloring");
 
@@ -230,7 +223,7 @@ class CanonicalColoring {
         maxcdeg_ = std::vector<int>(n+1, 0);
         cdeg_ = std::vector<int>(n+1, 0);
         maxcdeg_.at(0) = -1;
-        valid_M_ = false;
+        valid_QM_ = false;
 
         // Create initial partition
         k_ = 0;
@@ -354,23 +347,52 @@ class CanonicalColoring {
             }
         }
 
-        // Simplify, compute factor matrix,  and return canonical equitable partition
+        // Simplify, calculate quotient matrix,  and return canonical equitable partition
         C_.assign(C_.begin() + 1, C_.begin() + 1 + k_);
-        if( factor_matrix ) calculate_factor_matrix(graph);
+        if( calculate_qm ) calculate_quotient_matrix(graph);
         return C_;
     }
 
-    std::string factor_matrix() const {
-        if( !valid_M_ ) throw std::runtime_error("invalid factor matrix: call calculate() with third argument set to true");
+    static std::vector<int> histogram(const std::vector<std::set<int> > &partition) {
+        std::vector<int> hist;
+        for( size_t i = 0; i < partition.size(); ++i )
+            hist.push_back(partition.at(i).size());
+        return hist;
+    }
+
+    std::vector<int> histogram() const {
+        return CanonicalColoring::histogram(C_);
+    }
+
+    const std::vector<std::vector<int> >& quotient_matrix() const {
+        if( !valid_QM_ ) throw std::runtime_error("invalid quotient matrix: call calculate() with third argument set to true");
+        return QM_;
+    }
+
+    std::string quotient_matrix_str() const {
+        if( !valid_QM_ ) throw std::runtime_error("invalid quotient matrix: call calculate() with third argument set to true");
 
         std::string code;
-        for( auto& p : M_ ) {
+        for( auto& entry : QM_ ) {
            if( code != "" ) code += "-";
-           //code += std::to_string(p.first.first) + ":" + std::to_string(p.first.second) + ":" + std::to_string(p.second);
-           code += std::to_string(p.second) + "@(" + std::to_string(p.first.first) + "," + std::to_string(p.first.second) + ")";
+           code += std::to_string(entry.at(2)) + "@(" + std::to_string(entry.at(0)) + "," + std::to_string(entry.at(1)) + ")";
         }
         return code;
     }
+
+    std::string representation() const {
+        std::string qm(this->quotient_matrix_str());
+
+        // Add color histogram as additional column
+        qm += "_hist[";
+        for( int i = 0; i < k_; ++i ) {
+            qm += std::to_string(C_.at(i).size());
+            if( 1 + i < k_ ) qm += ";";
+        }
+        qm += "]";
+        return qm;
+    }
+
 };
 
 #endif
