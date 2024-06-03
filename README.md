@@ -4,9 +4,13 @@ Implementation of Berkholz, Bonsma, and Grohe's O((m+n)log n) algorithm for comp
 coloring (or coarsest equitable partition) for digraphs. Our implementation is a bit less efficient
 as it uses a vector of sets to represent the current partition.
 
+Provided functionality computes the (canonical) quotient matrix Q for the given graph. The entry
+Q(i,j] in Q counts the number of edges from a node with color i to nodes of color j, for the
+(final) equitable partition.
+
 Source code includes a simpe class for digraphs, and two exacutables: ```simple_test```, and ```graphs_DIMACS```. 
-The first computes the canonical partition for two simple graphs with initial colorings. The second is
-a general tool to compute canonical partitions for the graphs listed in a file given as argument. 
+The first computes the canonical partition and quotient matrix for simple graphs with given initial colorings. 
+The second is a general tool to compute canonical partitions for the graphs listed in a file given as argument. 
 Each file in the list must contain a graph in DIMACS format. A repository of such files can be 
 found [here.](https://pallini.di.uniroma1.it/Graphs.html)
 
