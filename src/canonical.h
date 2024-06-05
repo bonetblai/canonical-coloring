@@ -19,7 +19,8 @@ std::ostream& operator<<(std::ostream &os, const std::deque<T> &deque) {
 
 class CanonicalColoring {
   protected:
-    const int debug_;
+    int debug_;
+    bool use_stack_;
 
     std::vector<std::set<int> >    C_;  // Indexed by color. Partition. C[c] is set of vertices with color c
     std::vector<std::vector<int> > A_;  // Indexed by color. A[c] is vertices of color c adjacent to vertices of color r
@@ -59,11 +60,11 @@ class CanonicalColoring {
 
         if( debug_ > 1 ) std::cout << "                b: " << b << " (index for max entry in numcdeg)" << std::endl;
 
-        bool in_stack = in_s_refine_.at(s);
+        bool color_s_is_in_s_refine = in_s_refine_.at(s);
 
         if( debug_ > 1 ) {
-            std::cout << "            stack: " << s_refine_ << std::endl;
-            std::cout << "    Is s in stack? " << in_stack << std::endl;
+            std::cout << "         s_refine: " << s_refine_ << std::endl;
+            std::cout << " Is s in s_refine? " << color_s_is_in_s_refine << std::endl;
         }
 
         std::vector<int> f(1 + maxcdeg, -1);
@@ -71,7 +72,7 @@ class CanonicalColoring {
             if( numcdeg.at(i) > 0 ) {
                 if( i == mincdeg_.at(s) ) {
                     f.at(i) = s;
-                    if( !in_stack and i != b ) {
+                    if( !color_s_is_in_s_refine and i != b ) {
                         assert(!in_s_refine_.at(f.at(i)));
                         in_s_refine_.at(f.at(i)) = true;
                         s_refine_.push_back(f.at(i));
@@ -79,7 +80,7 @@ class CanonicalColoring {
                 } else {
                     k_ = k_ + 1;
                     f.at(i) = k_;
-                    if( in_stack or i != b ) {
+                    if( color_s_is_in_s_refine or i != b ) {
                         assert(!in_s_refine_.at(f.at(i)));
                         in_s_refine_.at(f.at(i)) = true;
                         s_refine_.push_back(f.at(i));
@@ -102,7 +103,7 @@ class CanonicalColoring {
 
         if( debug_ > 1 ) {
             std::cout << "                C: " << C_ << std::endl;
-            std::cout << "            stack: " << s_refine_ << std::endl;
+            std::cout << "         s_refine: " << s_refine_ << std::endl;
         }
     }
 
@@ -128,8 +129,11 @@ class CanonicalColoring {
     }
 
   public:
-    CanonicalColoring(int debug = 0) : debug_(debug), valid_QM_(false) { }
+    CanonicalColoring(int debug = 0, bool use_stack = false) : debug_(debug), use_stack_(use_stack), valid_QM_(false) { }
     ~CanonicalColoring() { }
+
+    void set_debug(int debug) { debug_ = debug; }
+    void set_use_stack(bool use_stack) { use_stack_ = use_stack; }
 
     const std::vector<int>& coloring() const { return colour_; }
     const std::vector<std::set<int> >& partition() const { return C_; }
@@ -205,7 +209,7 @@ class CanonicalColoring {
             std::cout << "             k: " << k_ << std::endl;
         }
 
-        std::vector<int> colors_adj;   // Colors adjacent to color r (popped from stack)
+        std::vector<int> colors_adj;   // Colors adjacent to color r
         std::vector<int> colors_split; // Colors in colors_adj that generate non-trivial splits
 
         in_s_refine_ = std::vector<bool>(n+1, false);
@@ -213,25 +217,28 @@ class CanonicalColoring {
         colors_adj.reserve(n+1);
         colors_split.reserve(n+1);
 
-        // Initialize stack with S = {1, 2, ..., k}, where k is #colors in initial alpha as a "sufficient refining colour set"
+        // Initialize s_refine with S = {1, 2, ..., k}, where k is #colors in initial alpha as a "sufficient refining colour set"
         for( int c = 1; c <= k_; ++c ) {
             in_s_refine_.at(c) = true;
             s_refine_.push_back(c);
         }
 
         if( debug_ > 0 ) {
-            std::cout << "         stack: " << s_refine_ << std::endl;
-            std::cout << "      in_stack: " << in_s_refine_ << std::endl;
+            std::cout << "      s_refine: " << s_refine_ << std::endl;
+            std::cout << "   in_s_refine: " << in_s_refine_ << std::endl;
         }
 
         // Main loop
         while( !s_refine_.empty() ) {
-            int r = s_refine_.front();
-            s_refine_.pop_front();
+            int r = use_stack_ ? s_refine_.back() : s_refine_.front();
+            if( use_stack_ )
+                s_refine_.pop_back();
+            else
+                s_refine_.pop_front();
             in_s_refine_.at(r) = false;
 
             if( debug_ > 0 ) {
-                std::cout << std::endl << "** Pop color r=" << r << ", stack: " << s_refine_ << std::endl;
+                std::cout << std::endl << "** Pop color r=" << r << ", s_refine: " << s_refine_ << std::endl;
                 std::cout << "        colour: " << colour_ << std::endl;
                 std::cout << "          cdeg: " << cdeg_ << std::endl;
                 std::cout << "       maxcdeg: " << maxcdeg_ << std::endl;
@@ -308,8 +315,8 @@ class CanonicalColoring {
             colors_adj.resize(0);
 
             if( debug_ > 0 ) {
-                std::cout << "     new stack: " << s_refine_ << std::endl;
-                std::cout << "      in_stack: " << in_s_refine_ << std::endl;
+                std::cout << "  new s_refine: " << s_refine_ << std::endl;
+                std::cout << "   in_s_refine: " << in_s_refine_ << std::endl;
             }
         }
 
