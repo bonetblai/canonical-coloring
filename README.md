@@ -4,7 +4,7 @@ Implementation of Berkholz, Bonsma, and Grohe's O((m+n)log n) algorithm for comp
 coloring (or coarsest equitable partition) for digraphs. Our implementation is a bit less efficient
 as it uses a vector of sets to represent the current partition.
 
-Rather than using a stack for ```s_refine''', we use a queue where new colors are pushed at the back,
+Rather than using a stack for ```s_refine```, we use a queue where new colors are pushed at the back,
 and colors are poped from the front. This seems to generate 1-WL canonical colorings: a coloring
 is 1-WL canonical if two graphs that are 1-WL equivalent (with respect to multiset-based colors)
 obtain the same colorings (up to 1-WL isomorphisms). This property, however, needs formal proof,
