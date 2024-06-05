@@ -213,7 +213,7 @@ class CanonicalColoring {
         colors_adj.reserve(n+1);
         colors_split.reserve(n+1);
 
-        // Initialize stack
+        // Initialize stack with S = {1, 2, ..., k}, where k is #colors in initial alpha as a "sufficient refining colour set"
         for( int c = 1; c <= k_; ++c ) {
             in_s_refine_.at(c) = true;
             s_refine_.push_back(c);
