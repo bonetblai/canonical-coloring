@@ -4,15 +4,23 @@ Implementation of Berkholz, Bonsma, and Grohe's O((m+n)log n) algorithm for comp
 coloring (or coarsest equitable partition) for digraphs. Our implementation is a bit less efficient
 as it uses a vector of sets to represent the current partition.
 
+Rather than using a stack for ```s_refine''', we use a queue where new colors are pushed at the back,
+and colors are poped from the front. This seems to generate 1-WL canonical colorings: a coloring
+is 1-WL canonical if two graphs that are 1-WL equivalent (with respect to multiset-based colors)
+obtain the same colorings (up to 1-WL isomorphisms). This property, however, needs formal proof,
+or counter example (if you find one, please notify us).
+
 Provided functionality computes the (canonical) quotient matrix Q for the given graph. The entry
 Q(i,j] in Q counts the number of edges from a node with color i to nodes of color j, for the
 (final) equitable partition.
 
-Source code includes a simpe class for digraphs, and two exacutables: ```simple_test```, and ```graphs_DIMACS```. 
-The first computes the canonical partition and quotient matrix for simple graphs with given initial colorings. 
-The second is a general tool to compute canonical partitions for the graphs listed in a file given as argument. 
-Each file in the list must contain a graph in DIMACS format. A repository of such files can be 
-found [here.](https://pallini.di.uniroma1.it/Graphs.html)
+Source code includes a simpe class for digraphs, and two exacutables: ```simple_test```, and
+```graphs_DIMACS```.  The first computes the canonical partition and quotient matrix for a number
+of simple graphs with given initial colorings. 
+The second is a general tool to compute canonical partitions for the graphs listed in a file
+given as argument.  Each file in the list must contain a graph in DIMACS format. A repository
+of such files can be found [here.](https://pallini.di.uniroma1.it/Graphs.html)
+See the source code of the examples to see how to use the coloring algorithm.
 
 The following results were obtained with ```graphs_DIMACS``` on the collection ```dac```
 for graphs associated with CNF formulas. In the results, ```n``` and ```m``` are
@@ -52,8 +60,8 @@ graphs/dac/x1_36.bliss (n=492, m=1896) k=176 color(s) 1.396 millisecond(s)
 29 graph(s) processed in 4.88995 second(s)
 ```
 
-
 References:
 
 Berkholz, Bonsma, and Grohe. Tight Lower and Upper Bounds for the Complexity of Canonical Colour Refinement. 2015. 
 [arXiv:1509.08251.](https://arxiv.org/abs/1509.08251)
+
